@@ -1,22 +1,21 @@
 from fastapi import FastAPI
-from pydantic import BaseModel, Field
-import joblib
-import numpy as np
+from pydantic import BaseModel
 from database import SessionLocal, Prediction, Patient
+from agent_workflow import SeizureGuardWorkflow
 
 
 app = FastAPI(title="SeizureGuard Backend")
 
+workflow = SeizureGuardWorkflow()
 
-# Load trained ML model and scaler
-model = joblib.load("ml_model/seizure_model.pkl")
-scaler = joblib.load("ml_model/scaler.pkl")
+
+
 
 
 # Input: exactly 24 extracted EEG features
 class PredictionRequest(BaseModel):
     patient_id: str
-    features: list[float] = Field(..., min_length=24, max_length=24)
+    eeg_data: list[list[float]]
 
 class PatientRequest(BaseModel):
     patient_id: str
@@ -34,34 +33,23 @@ def home():
 
 @app.post("/predict")
 def predict(data: PredictionRequest):
+
     db = SessionLocal()
 
-    # Convert features into NumPy array
-    features = np.array(data.features).reshape(1, -1)
+    # Run EEG through the complete agent workflow
+    result = workflow.run(data.eeg_data)
 
-    # Scale features using the trained scaler
-    scaled_features = scaler.transform(features)
-
-    # Make prediction
-    prediction = model.predict(scaled_features)[0]
-
-    # Get probability/confidence
-    probabilities = model.predict_proba(scaled_features)[0]
-    confidence = float(max(probabilities))
-
-    # Determine risk level for project display
-    if int(prediction) == 1:
-        risk_level = "High" if confidence >= 0.8 else "Moderate"
-    else:
-        risk_level = "Low"
+    prediction_result = result["prediction"]
+    risk_result = result["risk"]
+    alert_result = result["alert"]
 
     # Save prediction to database
     new_prediction = Prediction(
-    patient_id=data.patient_id,
-    prediction=str(int(prediction)),
-    confidence=confidence,
-    risk_level=risk_level
-)
+        patient_id=data.patient_id,
+        prediction=prediction_result["label"],
+        confidence=prediction_result["confidence"],
+        risk_level=risk_result["risk_level"]
+    )
 
     db.add(new_prediction)
     db.commit()
@@ -69,11 +57,11 @@ def predict(data: PredictionRequest):
     db.close()
 
     return {
-    "patient_id": data.patient_id,
-    "prediction": "Seizure" if int(prediction) == 1 else "No Seizure",
-    "confidence": round(confidence, 4),
-    "risk_level": risk_level
-}
+        "patient_id": data.patient_id,
+        "prediction": prediction_result,
+        "risk": risk_result,
+        "alert": alert_result
+    }
 
 @app.get("/history/{patient_id}")
 def get_history(patient_id: str):

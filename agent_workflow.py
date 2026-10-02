@@ -1,7 +1,7 @@
-from Agents.feature_agent import FeatureAgent
-from Agents.prediction_agent import PredictionAgent
-from Agents.risk_agent import RiskAgent
-from Agents.alert_agent import AlertAgent
+from feature_agent import FeatureAgent
+from prediction_agent import PredictionAgent
+from risk_agent import RiskAgent
+from alert_agent import AlertAgent
 
 
 class SeizureGuardWorkflow:

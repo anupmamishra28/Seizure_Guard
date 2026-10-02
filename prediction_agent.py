@@ -9,20 +9,18 @@ class PredictionAgent:
     def __init__(self):
 
         # Find project root directory
-        base_dir = os.path.dirname(
-            os.path.dirname(os.path.abspath(__file__))
-        )
+        base_dir = os.path.dirname(os.path.abspath(__file__))
 
         # Paths to trained model and scaler
         model_path = os.path.join(
             base_dir,
-            "Model",
+            "ml_model",
             "seizure_model.pkl"
         )
 
         scaler_path = os.path.join(
             base_dir,
-            "Model",
+            "ml_model",
             "scaler.pkl"
         )
 
