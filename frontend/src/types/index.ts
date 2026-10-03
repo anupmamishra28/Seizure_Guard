@@ -11,32 +11,38 @@ export interface Patient {
   gender: string;
 }
 
-// Prediction request — POST /predict
+// Prediction request — POST /predict (multipart/form-data)
+// The actual request is sent as FormData, this interface describes the fields.
 export interface PredictionRequest {
   patient_id: string;
-  features: number[]; // exactly 24 floats
+  name: string;
+  age: number;
+  gender: string;
+  file: File;
 }
 
 // Prediction response — POST /predict
-// Backend returns: patient_id, prediction ("Seizure" | "No Seizure"),
-// confidence (float 0–1), risk_level ("High" | "Moderate" | "Low")
+// Backend returns: patient_id, name, age, gender, prediction, confidence, risk_level
 export interface PredictionResponse {
   patient_id: string;
+  name: string;
+  age: number;
+  gender: string;
   prediction: 'Seizure' | 'No Seizure';
   confidence: number;
   risk_level: 'High' | 'Moderate' | 'Low';
 }
 
-// History record — GET /history/{patient_id}
-// Backend returns id, patient_id, prediction, confidence, timestamp.
-// risk_level is also in DB (Prediction table) but NOT returned by history endpoint.
+// History record — GET /history and GET /history/{patient_id}
+// Backend returns { history: [...] } wrapper.
+// Each record: id, patient_id, prediction, confidence, risk_level, timestamp.
 export interface HistoryRecord {
   id: number;
   patient_id: string;
-  prediction: string; // "1" or "0" as stored raw
+  prediction: string;
   confidence: number;
+  risk_level: string;
   timestamp: string;
-  risk_level?: string; // included if backend adds it later
 }
 
 // ==========================================
@@ -81,17 +87,8 @@ export interface AuthState {
   isLoading: boolean;
 }
 
-// EEG feature names — verified from feature_extraction.py
-export const EEG_FEATURE_NAMES: readonly string[] = [
-  // Channel 1
-  'ch1_mean', 'ch1_std', 'ch1_variance', 'ch1_minimum', 'ch1_maximum',
-  'ch1_rms', 'ch1_energy', 'ch1_delta_power', 'ch1_theta_power',
-  'ch1_alpha_power', 'ch1_beta_power', 'ch1_gamma_power',
-  // Channel 2
-  'ch2_mean', 'ch2_std', 'ch2_variance', 'ch2_minimum', 'ch2_maximum',
-  'ch2_rms', 'ch2_energy', 'ch2_delta_power', 'ch2_theta_power',
-  'ch2_alpha_power', 'ch2_beta_power', 'ch2_gamma_power',
-] as const;
+// Supported gender options for the prediction form
+export const GENDER_OPTIONS = ['Male', 'Female', 'Other'] as const;
 
 export type RiskLevel = 'High' | 'Moderate' | 'Low';
 

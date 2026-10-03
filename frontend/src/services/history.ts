@@ -4,17 +4,30 @@ import type { HistoryRecord } from '../types';
 // ==========================================
 // HISTORY SERVICE
 // Connected to:
-//   GET /history/{patient_id}
+//   GET /history           — all prediction records
+//   GET /history/{patient_id} — records for a specific patient
 //
-// Response array: { id, patient_id, prediction, confidence, timestamp }
-// Note: risk_level is in DB but NOT returned by this endpoint currently.
+// Response: { history: [ { id, patient_id, prediction, confidence, risk_level, timestamp } ] }
 // ==========================================
 
+interface HistoryResponse {
+  history: HistoryRecord[];
+}
+
 /**
- * Get prediction history for a patient.
+ * Get all prediction history.
+ * GET /history
+ */
+export async function getAllHistory(): Promise<HistoryRecord[]> {
+  const response = await api.get<HistoryResponse>('/history');
+  return response.data.history;
+}
+
+/**
+ * Get prediction history for a specific patient.
  * GET /history/{patient_id}
  */
 export async function getHistory(patientId: string): Promise<HistoryRecord[]> {
-  const response = await api.get<HistoryRecord[]>(`/history/${patientId}`);
-  return response.data;
+  const response = await api.get<HistoryResponse>(`/history/${patientId}`);
+  return response.data.history;
 }

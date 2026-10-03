@@ -1,36 +1,48 @@
 import api from './api';
-import type { PredictionRequest, PredictionResponse } from '../types';
+import type { PredictionResponse } from '../types';
 
 // ==========================================
 // PREDICTION SERVICE
 // Connected to:
 //   POST /predict
 //
-// Request: { patient_id, features: number[24] }
-// Response: { patient_id, prediction, confidence, risk_level }
+// Request: multipart/form-data with fields:
+//   file       → EDF file
+//   patient_id → string
+//   name       → string
+//   age        → integer
+//   gender     → string
+//
+// Response: { patient_id, name, age, gender, prediction, confidence, risk_level }
 // ==========================================
 
 /**
- * Run seizure prediction for a patient.
- * POST /predict
+ * Run seizure prediction by uploading an EDF file.
+ * POST /predict (multipart/form-data)
  *
+ * @param file      - The EEG .edf file
  * @param patientId - Patient ID string
- * @param features  - Array of exactly 24 EEG feature floats
- *                    (order: ch1_mean, ch1_std, ..., ch2_gamma_power)
+ * @param name      - Patient name
+ * @param age       - Patient age (integer)
+ * @param gender    - Patient gender
  */
 export async function runPrediction(
+  file: File,
   patientId: string,
-  features: number[]
+  name: string,
+  age: number,
+  gender: string
 ): Promise<PredictionResponse> {
-  if (features.length !== 24) {
-    throw new Error(`Expected exactly 24 features, got ${features.length}.`);
-  }
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('patient_id', patientId);
+  formData.append('name', name);
+  formData.append('age', String(age));
+  formData.append('gender', gender);
 
-  const payload: PredictionRequest = {
-    patient_id: patientId,
-    features,
-  };
-
-  const response = await api.post<PredictionResponse>('/predict', payload);
+  // Let Axios/browser set the Content-Type with the correct multipart boundary
+  const response = await api.post<PredictionResponse>('/predict', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return response.data;
 }

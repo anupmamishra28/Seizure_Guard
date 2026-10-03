@@ -3,6 +3,7 @@ import { Search, History as HistoryIcon, Brain, AlertCircle, Calendar, ArrowRigh
 import { Breadcrumbs } from '../components/common/Breadcrumbs';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { EmptyState, BackendMissingNotice } from '../components/common/StateViews';
+import { RiskBadge } from '../components/common/RiskBadge';
 import { getHistory } from '../services/history';
 import type { HistoryRecord } from '../types';
 import { Link, useParams } from 'react-router-dom';
@@ -165,6 +166,7 @@ export function HistoryPage() {
                     <th className="py-4 px-6">ID</th>
                     <th className="py-4 px-6">Timestamp</th>
                     <th className="py-4 px-6">Prediction Output</th>
+                    <th className="py-4 px-6">Risk Level</th>
                     <th className="py-4 px-6">Confidence</th>
                     <th className="py-4 px-6 text-right">Actions</th>
                   </tr>
@@ -194,6 +196,9 @@ export function HistoryPage() {
                           >
                             {rec.prediction}
                           </span>
+                        </td>
+                        <td className="py-4 px-6">
+                          <RiskBadge risk={rec.risk_level} />
                         </td>
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-2">

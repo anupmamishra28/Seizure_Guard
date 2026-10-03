@@ -6,10 +6,7 @@ const BASE_URL = (import.meta as any).env?.VITE_API_URL ?? 'http://127.0.0.1:800
 
 const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 30_000,
+  timeout: 60_000, // 60s — EDF file upload + processing may take longer
 });
 
 // Request interceptor — attach auth token when available

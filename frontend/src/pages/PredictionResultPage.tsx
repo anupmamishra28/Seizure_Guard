@@ -8,16 +8,15 @@ import { Breadcrumbs } from '../components/common/Breadcrumbs';
 import { RiskBadge } from '../components/common/RiskBadge';
 import { ConfidenceBar } from '../components/common/ConfidenceBar';
 import { formatConfidence } from '../utils';
-import type { Patient, PredictionResponse } from '../types';
+import type { PredictionResponse } from '../types';
 
 export function PredictionResultPage() {
   const { patientId } = useParams<{ patientId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const state = location.state as { result: PredictionResponse; patient?: Patient } | null;
+  const state = location.state as { result: PredictionResponse } | null;
   const result = state?.result;
-  const patient = state?.patient;
 
   if (!result) {
     return (
@@ -73,7 +72,7 @@ export function PredictionResultPage() {
         <div>
           <h1 className="page-title">EEG Screening Result</h1>
           <p className="page-subtitle">
-            {patient ? `${patient.name} · ` : ''}
+            {result.name} ·{' '}
             <code className="text-cyan-400 bg-cyan-950/30 px-1.5 py-0.5 rounded text-xs font-mono">
               {result.patient_id}
             </code>
@@ -153,22 +152,18 @@ export function PredictionResultPage() {
               <span className="text-sm text-[color:var(--text-muted)]">Patient ID</span>
               <span className="text-sm font-mono font-medium text-[color:var(--text-main)]">{result.patient_id}</span>
             </div>
-            {patient && (
-              <>
-                <div className="flex justify-between items-center py-2" style={{ borderBottom: '1px solid var(--glass-bg-hover)' }}>
-                  <span className="text-sm text-[color:var(--text-muted)]">Name</span>
-                  <span className="text-sm font-medium text-[color:var(--text-main)]">{patient.name}</span>
-                </div>
-                <div className="flex justify-between items-center py-2" style={{ borderBottom: '1px solid var(--glass-bg-hover)' }}>
-                  <span className="text-sm text-[color:var(--text-muted)]">Age</span>
-                  <span className="text-sm font-medium text-[color:var(--text-main)]">{patient.age} years</span>
-                </div>
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-sm text-[color:var(--text-muted)]">Gender</span>
-                  <span className="text-sm font-medium text-[color:var(--text-main)]">{patient.gender}</span>
-                </div>
-              </>
-            )}
+            <div className="flex justify-between items-center py-2" style={{ borderBottom: '1px solid var(--glass-bg-hover)' }}>
+              <span className="text-sm text-[color:var(--text-muted)]">Name</span>
+              <span className="text-sm font-medium text-[color:var(--text-main)]">{result.name}</span>
+            </div>
+            <div className="flex justify-between items-center py-2" style={{ borderBottom: '1px solid var(--glass-bg-hover)' }}>
+              <span className="text-sm text-[color:var(--text-muted)]">Age</span>
+              <span className="text-sm font-medium text-[color:var(--text-main)]">{result.age} years</span>
+            </div>
+            <div className="flex justify-between items-center py-2">
+              <span className="text-sm text-[color:var(--text-muted)]">Gender</span>
+              <span className="text-sm font-medium text-[color:var(--text-main)]">{result.gender}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -205,7 +200,7 @@ export function PredictionResultPage() {
           View History
         </button>
         <button
-          onClick={() => navigate(`/reports/${result.patient_id}`, { state: { result, patient } })}
+          onClick={() => navigate(`/reports/${result.patient_id}`, { state: { result } })}
           className="btn-secondary"
         >
           <FileText className="w-4 h-4" />
