@@ -6,3 +6,5 @@ joblib
 numpy
 scikit-learn
 scipy
+mne
+python-multipart
